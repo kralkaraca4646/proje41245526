@@ -1,0 +1,43 @@
+name: Print system info (development)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  print-info:
+    name: Print system information on Ubuntu runner
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Print OS and tool versions
+        run: |
+          echo "=== uname -a ==="
+          uname -a
+
+          echo "=== lsb_release -a ==="
+          if command -v lsb_release >/dev/null 2>&1; then
+            lsb_release -a
+          else
+            echo "lsb_release not found"
+          fi
+
+          echo "=== df -h ==="
+          df -h
+
+          echo "=== free -h ==="
+          free -h || cat /proc/meminfo
+
+          echo "=== Python ==="
+          python3 --version || python --version || echo "python not found"
+
+          echo "=== Node ==="
+          node --version || echo "node not installed"
+
+          echo "=== ffmpeg ==="
+          ffmpeg -version || echo "ffmpeg not installed"
+
+          echo "=== ls -la workspace ==="
+          ls -la
