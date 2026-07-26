@@ -15,6 +15,15 @@ jobs:
         run: |
           pip install google-api-python-client google-auth google-auth-oauthlib
 
+      - name: Install Python packages
+        run: |
+          pip install google-api-python-client google-auth google-auth-oauthlib
+
+      - name: Install FFmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
       - name: Create test video
         run: |
           ffmpeg -f lavfi -i color=c=black:s=1280x720:d=5 \
