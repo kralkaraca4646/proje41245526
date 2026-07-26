@@ -33,8 +33,7 @@ jobs:
       - name: Upload video to YouTube
         env:
           YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
-          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
-          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_OAUTH_JSON: ${{ secrets.YOUTUBE_OAUTH_JSON }}
         run: |
           python3 - <<'PY'
           import os
@@ -43,12 +42,15 @@ jobs:
           from googleapiclient.discovery import build
           from googleapiclient.http import MediaFileUpload
 
+          oauth_data = json.loads(os.environ["YOUTUBE_OAUTH_JSON"])
+          client = oauth_data["installed"]
+
           credentials = Credentials(
               token=None,
               refresh_token=os.environ["YOUTUBE_REFRESH_TOKEN"],
-              token_uri="https://oauth2.googleapis.com/token",
-              client_id=os.environ["YOUTUBE_CLIENT_ID"],
-              client_secret=os.environ["YOUTUBE_CLIENT_SECRET"],
+              token_uri=client["token_uri"],
+              client_id=client["client_id"],
+              client_secret=client["client_secret"],
               scopes=["https://www.googleapis.com/auth/youtube.upload"]
           )
 
