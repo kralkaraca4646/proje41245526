@@ -1,43 +1,53 @@
-name: Print system info (development)
+name: Test Google Sheets
 
 on:
   workflow_dispatch:
 
 jobs:
-  print-info:
-    name: Print system information on Ubuntu runner
+  test-sheets:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Python kurulumu
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
 
-      - name: Print OS and tool versions
+      - name: Google kütüphanelerini kur
         run: |
-          echo "=== uname -a ==="
-          uname -a
+          pip install google-api-python-client google-auth
 
-          echo "=== lsb_release -a ==="
-          if command -v lsb_release >/dev/null 2>&1; then
-            lsb_release -a
-          else
-            echo "lsb_release not found"
-          fi
+      - name: Google Sheets'i test et
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: |
+          python - <<'PY'
+          import os
+          import json
+          from google.oauth2.service_account import Credentials
+          from googleapiclient.discovery import build
 
-          echo "=== df -h ==="
-          df -h
+          data = json.loads(os.environ["GOOGLE_SERVICE_ACCOUNT_JSON"])
 
-          echo "=== free -h ==="
-          free -h || cat /proc/meminfo
+          credentials = Credentials.from_service_account_info(
+              data,
+              scopes=["https://www.googleapis.com/auth/spreadsheets"]
+          )
 
-          echo "=== Python ==="
-          python3 --version || python --version || echo "python not found"
+          service = build("sheets", "v4", credentials=credentials)
 
-          echo "=== Node ==="
-          node --version || echo "node not installed"
+          sheet_id = "14zE4-CTGsKf4N5_fsnX38xufEPP1xxwdVTFgpbKXzO4"
 
-          echo "=== ffmpeg ==="
-          ffmpeg -version || echo "ffmpeg not installed"
+          result = service.spreadsheets().values().get(
+              spreadsheetId=sheet_id,
+              range="A:D"
+          ).execute()
 
-          echo "=== ls -la workspace ==="
-          ls -la
+          values = result.get("values", [])
+
+          print("Google Sheets bağlantısı başarılı!")
+          print("Tablodaki satır sayısı:", len(values))
+
+          for row in values:
+              print(row)
+          PY
