@@ -1,0 +1,29 @@
+name: TikTok → YouTube Automation
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 4,16 * * *"   # TR saatiyle 07:00 ve 19:00'da, günde 2 kere
+
+jobs:
+  automation:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install packages
+        run: |
+          pip install yt-dlp gspread google-api-python-client google-auth google-auth-oauthlib google-auth-httplib2
+
+      - name: Run automation
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          SHEET_ID: ${{ secrets.SHEET_ID }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+          YOUTUBE_OAUTH_JSON: ${{ secrets.YOUTUBE_OAUTH_JSON }}
+        run: python automation.py
